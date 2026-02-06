@@ -7,6 +7,7 @@ import type {
   CreateListRequest,
   UpdateListRequest,
   CreateListItemRequest,
+  UpdateListItemRequest,
   ListItemResponse,
 } from "../types.js";
 
@@ -146,7 +147,7 @@ export async function createListItem(
 export async function updateListItem(
   listId: string,
   itemId: string,
-  updates: { label?: string; status?: "pending" | "completed"; section?: string | null }
+  updates: UpdateListItemRequest
 ): Promise<ListItemResource> {
   const client = getClient();
   const response = await client.request<ListItemResponse>(
