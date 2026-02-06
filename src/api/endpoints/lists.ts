@@ -7,7 +7,6 @@ import type {
   CreateListRequest,
   UpdateListRequest,
   CreateListItemRequest,
-  UpdateListItemRequest,
   ListItemResponse,
 } from "../types.js";
 
@@ -121,6 +120,7 @@ export async function deleteList(listId: string): Promise<void> {
 
 /**
  * Create a new list item
+ * Note: This endpoint uses simple JSON format, not JSON:API like other endpoints
  */
 export async function createListItem(
   listId: string,
@@ -129,13 +129,8 @@ export async function createListItem(
 ): Promise<ListItemResource> {
   const client = getClient();
   const request: CreateListItemRequest = {
-    data: {
-      type: "list_item",
-      attributes: {
-        label,
-        section: section ?? null,
-      },
-    },
+    label,
+    section: section ?? null,
   };
   const response = await client.post<ListItemResponse>(
     `/api/frames/{frameId}/lists/${listId}/list_items`,
@@ -146,6 +141,7 @@ export async function createListItem(
 
 /**
  * Update a list item
+ * Note: This endpoint uses simple JSON format, not JSON:API like other endpoints
  */
 export async function updateListItem(
   listId: string,
@@ -153,15 +149,9 @@ export async function updateListItem(
   updates: { label?: string; status?: "pending" | "completed"; section?: string | null }
 ): Promise<ListItemResource> {
   const client = getClient();
-  const request: UpdateListItemRequest = {
-    data: {
-      type: "list_item",
-      attributes: updates,
-    },
-  };
   const response = await client.request<ListItemResponse>(
     `/api/frames/{frameId}/lists/${listId}/list_items/${itemId}`,
-    { method: "PUT", body: request }
+    { method: "PUT", body: updates }
   );
   return response.data;
 }
