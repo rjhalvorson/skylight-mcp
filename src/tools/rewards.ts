@@ -11,7 +11,7 @@ import {
   redeemReward,
   unredeemReward,
 } from "../api/endpoints/rewards.js";
-import { findCategoryByName } from "../api/endpoints/categories.js";
+import { findCategoryByName, getCategories } from "../api/endpoints/categories.js";
 import { formatErrorForMcp } from "../utils/errors.js";
 
 export function registerRewardTools(server: McpServer): void {
@@ -100,7 +100,10 @@ Use this to answer:
     {},
     async () => {
       try {
-        const points = await getRewardPoints();
+        const [points, categories] = await Promise.all([
+          getRewardPoints(),
+          getCategories(),
+        ]);
 
         if (points.length === 0) {
           return {
@@ -113,13 +116,20 @@ Use this to answer:
           };
         }
 
+        // Build category lookup for family member names
+        const categoryMap = new Map(
+          categories.map((c) => [Number(c.id), c.attributes.label ?? "Unknown"])
+        );
+
         const pointsList = points
           .map((point) => {
-            return [
-              `- Category ID: ${point.category_id}`,
-              `  Current balance: ${point.current_point_balance} pts`,
-              `  Lifetime earned: ${point.lifetime_points_earned} pts`,
-            ].join("\n");
+            const name = categoryMap.get(point.category_id) ?? `Category ${point.category_id}`;
+            const parts = [
+              `- ${name}`,
+              `  Current balance: ${point.current_point_balance}`,
+              `  Lifetime earned: ${point.lifetime_points_earned}`,
+            ];
+            return parts.join("\n");
           })
           .join("\n\n");
 
