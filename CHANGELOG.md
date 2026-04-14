@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Centralized shared API constants, including the Skylight API version header
 - Updated auth-related docs and error guidance to reflect OAuth-based login
 - Added automated tests for the OAuth login flow and kept live smoke validation against the real API
+
 ## [1.1.7] - 2025-12-30
 
 ### Fixed

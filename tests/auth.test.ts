@@ -2,20 +2,20 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { login } from "../src/api/auth.js";
 
-function textResponse(status: number, body: string, headers: Record<string, string> = {}): Response {
+function textResponse(status: number, body: string, headers: HeadersInit = {}): Response {
   return new Response(body, {
     status,
     headers,
   });
 }
 
-function jsonResponse(status: number, body: unknown, headers: Record<string, string> = {}): Response {
+function jsonResponse(status: number, body: unknown, headers: HeadersInit = {}): Response {
+  const responseHeaders = new Headers(headers);
+  responseHeaders.set("content-type", "application/json");
+
   return new Response(JSON.stringify(body), {
     status,
-    headers: {
-      "content-type": "application/json",
-      ...headers,
-    },
+    headers: responseHeaders,
   });
 }
 
@@ -37,11 +37,15 @@ describe("auth", () => {
         capturedState = params.get("state") ?? "";
         return textResponse(302, "", {
           location: "https://app.ourskylight.com/auth/session/new",
-          "set-cookie": "_skylight_cloud_session=abc123; path=/; secure; httponly",
+          "set-cookie":
+            "_skylight_cloud_session=abc123; path=/; secure; httponly, skylight_notice=dismissed; Expires=Wed, 15 Apr 2026 00:00:00 GMT; Path=/; Secure",
         });
       }
 
       if (url === "https://app.ourskylight.com/auth/session/new") {
+        const headers = new Headers(init?.headers);
+        expect(headers.get("cookie")).toContain("_skylight_cloud_session=abc123");
+        expect(headers.get("cookie")).toContain("skylight_notice=dismissed");
         return textResponse(
           200,
           '<form><input type="hidden" name="authenticity_token" value="form-token-123" /></form>'
@@ -49,6 +53,9 @@ describe("auth", () => {
       }
 
       if (url === "https://app.ourskylight.com/auth/session") {
+        const headers = new Headers(init?.headers);
+        expect(headers.get("cookie")).toContain("_skylight_cloud_session=abc123");
+        expect(headers.get("cookie")).toContain("skylight_notice=dismissed");
         const body = init?.body instanceof URLSearchParams ? init.body : new URLSearchParams(String(init?.body ?? ""));
         expect(body.get("authenticity_token")).toBe("form-token-123");
         expect(body.get("email")).toBe("user@example.com");

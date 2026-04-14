@@ -34,10 +34,8 @@ class CookieJar {
   setFromResponse(response: Response): void {
     const headerValues =
       typeof response.headers.getSetCookie === "function"
-        ? response.headers.getSetCookie()
-        : response.headers.get("set-cookie")
-          ? [response.headers.get("set-cookie")!]
-          : [];
+        ? response.headers.getSetCookie().flatMap((headerValue) => splitSetCookieHeader(headerValue))
+        : splitSetCookieHeader(response.headers.get("set-cookie"));
 
     for (const header of headerValues) {
       const [cookiePair] = header.split(";", 1);
@@ -63,6 +61,43 @@ class CookieJar {
       .map(([name, value]) => `${name}=${value}`)
       .join("; ");
   }
+}
+
+function splitSetCookieHeader(headerValue: string | null): string[] {
+  if (!headerValue) {
+    return [];
+  }
+
+  const cookies: string[] = [];
+  let current = "";
+  let inExpiresAttribute = false;
+
+  for (let index = 0; index < headerValue.length; index += 1) {
+    const char = headerValue[index];
+    const remainingHeader = headerValue.slice(index).toLowerCase();
+
+    if (!inExpiresAttribute && remainingHeader.startsWith("expires=")) {
+      inExpiresAttribute = true;
+    }
+
+    if (char === "," && !inExpiresAttribute) {
+      cookies.push(current.trim());
+      current = "";
+      continue;
+    }
+
+    if (inExpiresAttribute && char === ";") {
+      inExpiresAttribute = false;
+    }
+
+    current += char;
+  }
+
+  if (current.trim()) {
+    cookies.push(current.trim());
+  }
+
+  return cookies;
 }
 
 function createPkceVerifier(): string {
@@ -173,9 +208,11 @@ async function beginOAuthFlow(state: string, codeChallenge: string, cookieJar: C
 
   const location = response.headers.get("location");
   if (response.status !== 302 || !location) {
+    response.body?.cancel();
     throw new Error(`Unexpected authorize response: HTTP ${response.status}`);
   }
 
+  response.body?.cancel();
   return new URL(location).toString();
 }
 
@@ -194,6 +231,7 @@ async function loadLoginForm(loginUrl: string, cookieJar: CookieJar): Promise<st
   );
 
   if (!response.ok) {
+    response.body?.cancel();
     throw new Error(`Failed to load Skylight login form: HTTP ${response.status}`);
   }
 
@@ -230,6 +268,7 @@ async function submitLoginForm(
 
   const location = response.headers.get("location");
   if (response.status === 302 && location) {
+    response.body?.cancel();
     return new URL(location, SKYLIGHT_BASE_URL).toString();
   }
 
@@ -257,9 +296,11 @@ async function authorizeAuthenticatedSession(authorizeUrl: string, cookieJar: Co
 
   const location = response.headers.get("location");
   if (response.status !== 302 || !location) {
+    response.body?.cancel();
     throw new Error(`Unexpected post-login authorize response: HTTP ${response.status}`);
   }
 
+  response.body?.cancel();
   return location;
 }
 
@@ -315,10 +356,12 @@ async function detectSubscriptionStatus(token: string): Promise<string | null> {
     });
 
     if (response.status === 401 || response.status === 403 || response.status === 404) {
+      response.body?.cancel();
       return "free";
     }
 
     if (!response.ok) {
+      response.body?.cancel();
       return null;
     }
 
@@ -347,7 +390,7 @@ async function detectSubscriptionStatus(token: string): Promise<string | null> {
  * Replays the same browser OAuth flow observed from Skylight web.
  */
 export async function login(email: string, password: string): Promise<AuthResult> {
-  console.error(`[auth] Starting OAuth login for ${email}...`);
+  console.error("[auth] Starting OAuth login.");
 
   const cookieJar = new CookieJar();
   const state = createState();
@@ -363,7 +406,7 @@ export async function login(email: string, password: string): Promise<AuthResult
   const token = await exchangeAuthorizationCode(authorizationCode, codeVerifier);
   const subscriptionStatus = await detectSubscriptionStatus(token);
 
-  console.error(`[auth] OAuth login successful, token prefix: ${token.substring(0, 10)}...`);
+  console.error("[auth] OAuth login successful.");
 
   return {
     email,
