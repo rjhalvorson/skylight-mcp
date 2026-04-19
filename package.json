@@ -1,5 +1,5 @@
 {
-  "name": "@eaglebyte/skylight-mcp",
+  "name": "@rjhalvorson/skylight-mcp",
   "version": "1.1.7",
   "description": "MCP server for Skylight Calendar API - enables agentic interactions for calendar, chores, lists, and family management",
   "type": "module",
@@ -33,11 +33,18 @@
     "family",
     "chores"
   ],
-  "author": "",
+  "author": "rjhalvorson <rjhalvorson@gmail.com> (https://github.com/rjhalvorson)",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/TheEagleByte/skylight-mcp.git"
+    "url": "https://github.com/rjhalvorson/skylight-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rjhalvorson/skylight-mcp/issues"
+  },
+  "homepage": "https://github.com/rjhalvorson/skylight-mcp#readme",
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.11.0",

@@ -2,6 +2,8 @@
 
 An MCP (Model Context Protocol) server for the Skylight Calendar API. Enables AI assistants like Claude to interact with your Skylight family calendar, chores, lists, and more.
 
+> **Note:** This is a maintained continuation of [TheEagleByte/skylight-mcp](https://github.com/TheEagleByte/skylight-mcp). The original project appears unmaintained; this repo carries the project forward with ongoing updates and bug fixes. The full original commit history and authorship is preserved in git.
+
 ## Features
 
 - **Calendar**: Query calendar events ("What's on my calendar today?")
@@ -23,7 +25,7 @@ An MCP (Model Context Protocol) server for the Skylight Calendar API. Enables AI
   "mcpServers": {
     "skylight": {
       "command": "npx",
-      "args": ["@eaglebyte/skylight-mcp"],
+      "args": ["@rjhalvorson/skylight-mcp"],
       "env": {
         "SKYLIGHT_EMAIL": "your_email@example.com",
         "SKYLIGHT_PASSWORD": "your_password",
@@ -36,7 +38,7 @@ An MCP (Model Context Protocol) server for the Skylight Calendar API. Enables AI
 
 **Claude Code:**
 ```bash
-claude mcp add skylight npx @eaglebyte/skylight-mcp \
+claude mcp add skylight npx @rjhalvorson/skylight-mcp \
   -e SKYLIGHT_EMAIL=your_email@example.com \
   -e SKYLIGHT_PASSWORD=your_password \
   -e SKYLIGHT_FRAME_ID=your_frame_id
@@ -45,7 +47,7 @@ claude mcp add skylight npx @eaglebyte/skylight-mcp \
 #### Option 2: From source
 
 ```bash
-git clone https://github.com/TheEagleByte/skylight-mcp.git
+git clone https://github.com/rjhalvorson/skylight-mcp.git
 cd skylight-mcp && npm install && npm run build
 ```
 
@@ -212,14 +214,14 @@ npm run typecheck
 
 ## API Documentation
 
-This MCP server is built on top of the reverse-engineered Skylight API. The API endpoints were documented using the [skylight-api](https://github.com/TheEagleByte/skylight-api) project, which converts browser network traffic (HAR files) into an OpenAPI specification.
+This MCP server is built on top of the reverse-engineered Skylight API. The API endpoints are documented in the upstream [skylight-api](https://github.com/TheEagleByte/skylight-api) project (maintained separately by TheEagleByte), which converts browser network traffic (HAR files) into an OpenAPI specification.
 
-**API Resources:**
+**Upstream API Resources** (hosted by the skylight-api project):
 - [Interactive API Docs (Swagger UI)](https://theeaglebyte.github.io/skylight-api/swagger.html)
 - [API Reference (ReDoc)](https://theeaglebyte.github.io/skylight-api/redoc.html)
 - [OpenAPI Specification](https://theeaglebyte.github.io/skylight-api/openapi/openapi.yaml)
 
-If you discover new API endpoints or find issues with the current documentation, please contribute to the [skylight-api](https://github.com/TheEagleByte/skylight-api) repository.
+If you discover new API endpoints or find issues with the API documentation itself, please contribute to the upstream [skylight-api](https://github.com/TheEagleByte/skylight-api) repository. For MCP server issues, use this repo's [issue tracker](https://github.com/rjhalvorson/skylight-mcp/issues).
 
 ## Contributing
 
@@ -233,7 +235,7 @@ Contributions are welcome! Here's how you can help:
 ### Development Setup
 
 ```bash
-git clone https://github.com/TheEagleByte/skylight-mcp.git
+git clone https://github.com/rjhalvorson/skylight-mcp.git
 cd skylight-mcp
 npm install
 npm run dev  # Start with hot reload
@@ -248,9 +250,9 @@ npm run dev  # Start with hot reload
 
 ## Issues & Support
 
-- **Bug reports**: [Open an issue](https://github.com/TheEagleByte/skylight-mcp/issues/new) with steps to reproduce
-- **Feature requests**: [Open an issue](https://github.com/TheEagleByte/skylight-mcp/issues/new) describing the use case
-- **Questions**: [Start a discussion](https://github.com/TheEagleByte/skylight-mcp/discussions) or open an issue
+- **Bug reports**: [Open an issue](https://github.com/rjhalvorson/skylight-mcp/issues/new) with steps to reproduce
+- **Feature requests**: [Open an issue](https://github.com/rjhalvorson/skylight-mcp/issues/new) describing the use case
+- **Questions**: [Start a discussion](https://github.com/rjhalvorson/skylight-mcp/discussions) or open an issue
 
 Please include relevant details like your Node.js version, error messages, and configuration (with sensitive values redacted).
 
