@@ -116,10 +116,7 @@ jobs:
           ls -lh "${OUTPUT}"
 
       - name: Publish to npm
-        # --ignore-scripts skips the package.json 'prepare' hook which re-runs tsc.
-        # We already built in the Build step above, and after 'npm prune --omit=dev'
-        # the devDependencies (typescript, @types/node) required by tsc are gone.
-        run: npm publish --access public --provenance --ignore-scripts
+        run: npm publish --access public --provenance
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
