@@ -94,7 +94,7 @@ Some features require a Skylight Plus subscription. The server detects subscript
 3. Commit changes and merge to main
 4. Create and push a tag with `v` prefix: `git tag v1.2.3 && git push origin v1.2.3`
 
-**Important**: Tags must start with `v` (e.g., `v1.1.8`) to trigger the release workflow. Tags without the `v` prefix (e.g., `1.1.8`) will not trigger a release. The workflow fails fast if the tag version does not match `package.json`.
+**Important**: Tags must start with `v` (e.g., `v2.0.0`) to trigger the release workflow. Tags without the `v` prefix (e.g., `2.0.0`) will not trigger a release. The workflow fails fast if the tag version does not match `package.json`.
 
 The release workflow (`.github/workflows/release.yml`) will:
 - Run linting, type checking, and tests

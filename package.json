@@ -1,6 +1,6 @@
 {
   "name": "@rjhalvorson/skylight-mcp",
-  "version": "1.1.8",
+  "version": "2.0.0",
   "description": "MCP server for Skylight Calendar API - enables agentic interactions for calendar, chores, lists, and family management",
   "type": "module",
   "main": "dist/index.js",
@@ -47,7 +47,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.11.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
