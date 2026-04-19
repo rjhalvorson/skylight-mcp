@@ -116,7 +116,15 @@ jobs:
           ls -lh "${OUTPUT}"
 
       - name: Publish to npm
-        run: npm publish --access public --provenance
+        # First publish bootstrap: uses NPM_TOKEN. --provenance is disabled
+        # because npm Trusted Publishing cannot be pre-configured for a
+        # package that doesn't exist yet. After v2.0.0 publishes, configure
+        # Trusted Publishing on the package settings page and revert this
+        # step to `npm publish --access public --provenance` (removing the
+        # NODE_AUTH_TOKEN env below).
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
