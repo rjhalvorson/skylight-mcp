@@ -1,3 +1,7 @@
+import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
@@ -12,6 +16,13 @@ import { registerRewardTools } from "./tools/rewards.js";
 import { registerMiscTools } from "./tools/misc.js";
 import { registerMealTools } from "./tools/meals.js";
 import { registerPhotoTools } from "./tools/photos.js";
+
+const pkg = JSON.parse(
+  readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), "..", "package.json"),
+    "utf8",
+  ),
+) as { version: string };
 
 /**
  * Create and configure the MCP server
@@ -28,7 +39,7 @@ export async function createServer(): Promise<{
 
   const server = new McpServer({
     name: "skylight",
-    version: "1.0.0",
+    version: pkg.version,
   });
 
   // Register base tools (always available)

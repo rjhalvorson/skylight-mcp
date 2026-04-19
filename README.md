@@ -17,7 +17,16 @@ An MCP (Model Context Protocol) server for the Skylight Calendar API. Enables AI
 
 ### Installation
 
-#### Option 1: npm package (Recommended)
+#### Option 1: Claude Desktop (.mcpb, easiest)
+
+1. Download the latest `skylight-mcp-<version>.mcpb` from the [Releases page](https://github.com/rjhalvorson/skylight-mcp/releases).
+2. In Claude Desktop, open **Settings → Extensions**, click **Advanced settings**, find the **Extension Developer** section, and click **Install Extension…**. Select the downloaded `.mcpb`. (On macOS/Windows, double-clicking the `.mcpb` file may also trigger the installer.)
+3. Fill in your Skylight email, password, frame ID, and timezone when prompted.
+4. That's it — the Skylight tools are available in Claude Desktop.
+
+No Node.js install or config editing required. Credentials are stored securely by Claude Desktop.
+
+#### Option 2: npm package
 
 **mcp.json:**
 ```json
@@ -44,7 +53,7 @@ claude mcp add skylight npx @rjhalvorson/skylight-mcp \
   -e SKYLIGHT_FRAME_ID=your_frame_id
 ```
 
-#### Option 2: From source
+#### Option 3: From source
 
 ```bash
 git clone https://github.com/rjhalvorson/skylight-mcp.git

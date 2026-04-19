@@ -1,0 +1,71 @@
+{
+  "manifest_version": "0.2",
+  "name": "skylight-mcp",
+  "display_name": "Skylight Calendar",
+  "version": "1.1.7",
+  "description": "Query and manage your Skylight family calendar, chores, lists, and rewards",
+  "long_description": "Connect Claude to your Skylight Calendar account for natural-language access to family calendars, chores, grocery and to-do lists, tasks, family members, and rewards. Built on top of the reverse-engineered Skylight API. This is a maintained continuation of TheEagleByte/skylight-mcp.",
+  "author": {
+    "name": "rjhalvorson",
+    "email": "rjhalvorson@gmail.com",
+    "url": "https://github.com/rjhalvorson"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rjhalvorson/skylight-mcp"
+  },
+  "homepage": "https://github.com/rjhalvorson/skylight-mcp#readme",
+  "documentation": "https://github.com/rjhalvorson/skylight-mcp#readme",
+  "support": "https://github.com/rjhalvorson/skylight-mcp/issues",
+  "license": "MIT",
+  "keywords": ["mcp", "skylight", "calendar", "family", "chores", "lists"],
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/dist/index.js"],
+      "env": {
+        "SKYLIGHT_EMAIL": "${user_config.email}",
+        "SKYLIGHT_PASSWORD": "${user_config.password}",
+        "SKYLIGHT_FRAME_ID": "${user_config.frame_id}",
+        "SKYLIGHT_TIMEZONE": "${user_config.timezone}"
+      }
+    }
+  },
+  "tools_generated": true,
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "node": ">=18.0.0"
+    }
+  },
+  "user_config": {
+    "email": {
+      "type": "string",
+      "title": "Skylight Email",
+      "description": "Email address for your Skylight account",
+      "required": true
+    },
+    "password": {
+      "type": "string",
+      "title": "Skylight Password",
+      "description": "Password for your Skylight account",
+      "sensitive": true,
+      "required": true
+    },
+    "frame_id": {
+      "type": "string",
+      "title": "Frame ID",
+      "description": "Your household frame ID. See the project README for how to find it via a proxy tool.",
+      "required": true
+    },
+    "timezone": {
+      "type": "string",
+      "title": "Timezone",
+      "description": "IANA timezone (e.g., America/New_York, Europe/London). Defaults to America/New_York.",
+      "default": "America/New_York",
+      "required": false
+    }
+  }
+}

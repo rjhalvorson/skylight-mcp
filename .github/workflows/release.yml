@@ -41,15 +41,19 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Upgrade npm for Trusted Publishing
-        run: npm install -g npm@latest
-
-      - name: Publish to npm
-        run: npm publish --access public --provenance
-
       - name: Extract version from tag
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Verify package.json version matches tag
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$PKG_VERSION" != "$VERSION" ]; then
+            echo "::error::Tag version ($VERSION) does not match package.json version ($PKG_VERSION). Bump package.json before tagging."
+            exit 1
+          fi
 
       - name: Generate changelog
         id: changelog
@@ -76,6 +80,47 @@ jobs:
             echo 'EOF'
           } >> $GITHUB_OUTPUT
 
+      - name: Install MCPB CLI
+        run: npm install -g @anthropic-ai/mcpb
+
+      - name: Sync manifest version to tag
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          node -e '
+            const fs = require("fs");
+            const version = process.env.VERSION;
+            if (!/^\d+\.\d+\.\d+(-[\w.+-]+)?$/.test(version)) {
+              throw new Error("Refusing to write non-semver version: " + version);
+            }
+            const m = JSON.parse(fs.readFileSync("manifest.json", "utf8"));
+            m.version = version;
+            fs.writeFileSync("manifest.json", JSON.stringify(m, null, 2) + "\n");
+          '
+          head -5 manifest.json
+
+      - name: Validate manifest
+        run: mcpb validate manifest.json
+
+      - name: Prune dev dependencies
+        run: npm prune --omit=dev
+
+      - name: Pack MCPB bundle
+        id: pack
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          OUTPUT="skylight-mcp-${VERSION}.mcpb"
+          mcpb pack . "${OUTPUT}"
+          echo "MCPB_FILE=${OUTPUT}" >> "$GITHUB_OUTPUT"
+          ls -lh "${OUTPUT}"
+
+      - name: Upgrade npm for Trusted Publishing
+        run: npm install -g npm@latest
+
+      - name: Publish to npm
+        run: npm publish --access public --provenance
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -84,6 +129,14 @@ jobs:
             ## Changes
 
             ${{ steps.changelog.outputs.CHANGELOG }}
+
+            ## Install
+
+            **Claude Desktop (easiest):** Download `${{ steps.pack.outputs.MCPB_FILE }}` below and double-click to install.
+
+            **npm:** `npx @rjhalvorson/skylight-mcp`
+          files: ${{ steps.pack.outputs.MCPB_FILE }}
+          fail_on_unmatched_files: true
           draft: false
           prerelease: ${{ contains(github.ref, '-') }}
         env:
