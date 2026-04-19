@@ -17,12 +17,19 @@ First release under maintained continuation at [rjhalvorson/skylight-mcp](https:
 ### Fixed
 
 - **Authentication**: Updated email/password authentication to match Skylight's current web OAuth flow. The server now follows the browser login sequence (`/oauth/authorize` -> `/auth/session` -> `/oauth/token`) and uses the returned bearer token for API requests. Fixes "Invalid email or password" errors caused by the previous session-based auth no longer being accepted by the Skylight API. (Originally submitted as [upstream PR #39](https://github.com/TheEagleByte/skylight-mcp/pull/39) by Andrew Ferguson; integrated here.)
+- **List item create/update**: Use flat JSON body instead of JSON:API nested envelope; previously silently mangled list-item writes. ([upstream PR #30](https://github.com/TheEagleByte/skylight-mcp/pull/30) by Adam Argo.)
+- **Chore and reward API formats**: Chore creation, reward creation, and reward-points operations now send the flat JSON body shape the Skylight API expects. Also adds bulk chore creation via `/chores/create_multiple`. ([upstream PR #36](https://github.com/TheEagleByte/skylight-mcp/pull/36) by Caleb Howell.)
+- **`update_chore` splitting recurring series**: Updates now apply to the whole series (or a single instance when requested) via the new `applyToSeries` option + `updateChoreTemplate()` helper, instead of silently orphaning subsequent occurrences. ([upstream PR #33](https://github.com/TheEagleByte/skylight-mcp/pull/33) by Brandon Palm.)
+- **Chore IDs in output**: `get_chores` now includes each chore's ID in its output so follow-up `update_chore` / `delete_chore` calls have something to reference. ([upstream PR #31](https://github.com/TheEagleByte/skylight-mcp/pull/31) by Brandon Palm.)
+- **Reward points show family member names**: `get_reward_points` output now resolves `category_id` to the family member's name instead of showing raw numeric IDs. ([upstream PR #31](https://github.com/TheEagleByte/skylight-mcp/pull/31) by Brandon Palm.)
 
 ### Added
 
 - **One-click Claude Desktop install**: Release workflow now builds and attaches an `.mcpb` bundle to each GitHub Release. Users can install with a double-click or via Claude Desktop's Settings → Extensions.
 - **Automated OAuth tests**: New `tests/auth.test.ts` covers the OAuth login happy path and invalid-credential handling.
 - **Shared API constants module** (`src/api/constants.ts`) centralizing the Skylight API version header and related URLs.
+- **`add_reward_points` tool**: Add or subtract reward points for a family member. (From [upstream PR #36](https://github.com/TheEagleByte/skylight-mcp/pull/36) by Caleb Howell.)
+- **Bulk chore creation**: Underlying support for `/chores/create_multiple` (from [upstream PR #36](https://github.com/TheEagleByte/skylight-mcp/pull/36) by Caleb Howell).
 
 ### Changed
 
