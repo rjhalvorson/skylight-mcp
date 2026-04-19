@@ -34,8 +34,10 @@ npm run generate:types # Generate TypeScript types from OpenAPI spec
 - `config.ts` - Zod-validated env config supporting two auth methods
 - `api/client.ts` - HTTP client with Bearer/Basic auth, auto-login, subscription status tracking
 - `api/auth.ts` - Browser-style OAuth login flow for email/password authentication
+- `api/constants.ts` - Shared API URLs and version header
 - `api/generated-types.ts` - Auto-generated types from OpenAPI spec
 - `utils/dates.ts` - Parses "today", "tomorrow", day names, YYYY-MM-DD
+- `manifest.json` - MCPB bundle manifest for Claude Desktop one-click install (version synced from tag at release time)
 
 ## Authentication
 
@@ -54,7 +56,7 @@ Some features require a Skylight Plus subscription. The server detects subscript
 
 **Plus-only domains**: Rewards, Meals, Photos. Subscription status is inferred after login from live API access.
 
-## MCP Tools (35+ total)
+## MCP Tools (41 total)
 
 ### Base Tools (Always Available)
 
@@ -92,13 +94,15 @@ Some features require a Skylight Plus subscription. The server detects subscript
 3. Commit changes and merge to main
 4. Create and push a tag with `v` prefix: `git tag v1.2.3 && git push origin v1.2.3`
 
-**Important**: Tags must start with `v` (e.g., `v1.1.7`) to trigger the release workflow. Tags without the `v` prefix (e.g., `1.1.7`) will not trigger a release.
+**Important**: Tags must start with `v` (e.g., `v1.1.8`) to trigger the release workflow. Tags without the `v` prefix (e.g., `1.1.8`) will not trigger a release. The workflow fails fast if the tag version does not match `package.json`.
 
 The release workflow (`.github/workflows/release.yml`) will:
 - Run linting, type checking, and tests
 - Build the package
+- Verify git tag matches `package.json` version
+- Sync `manifest.json` version to the tag, validate, and pack an `.mcpb` bundle
 - Publish to npm with provenance
-- Create a GitHub release with auto-generated changelog
+- Create a GitHub release with auto-generated changelog and the `.mcpb` bundle attached
 
 ## API Quirks
 
