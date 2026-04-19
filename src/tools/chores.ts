@@ -163,8 +163,7 @@ The chore will appear on the Skylight display.`,
         .describe("Due time (e.g., '10:00 AM', '14:30'). Optional."),
       assignee: z
         .string()
-        .optional()
-        .describe("Family member to assign (e.g., 'Dad', 'Mom', 'Kids')"),
+        .describe("Family member to assign (e.g., 'Dad', 'Mom', 'Kids'). Required by the Skylight API."),
       recurring: z
         .boolean()
         .optional()
@@ -339,6 +338,24 @@ Returns: The updated chore details.`,
         }
 
         if (applyToSeries) {
+          // The recurring-template endpoint only supports summary, reward points, and assignee.
+          // Error loudly rather than silently dropping status/date/time.
+          const unsupported: string[] = [];
+          if (status !== undefined) unsupported.push("status");
+          if (date !== undefined) unsupported.push("date");
+          if (time !== undefined) unsupported.push("time");
+          if (unsupported.length > 0) {
+            return {
+              content: [
+                {
+                  type: "text" as const,
+                  text: `applyToSeries=true only supports summary, rewardPoints, and assignee. The following fields cannot be applied to a recurring series and must be changed per-instance: ${unsupported.join(", ")}. Re-run without applyToSeries to update this one instance, or omit those fields from the series update.`,
+                },
+              ],
+              isError: true,
+            };
+          }
+
           // Extract the base template ID by removing the date suffix
           const templateId = choreId.split("-").slice(0, -3).join("-") || choreId;
 
@@ -400,7 +417,7 @@ Use this when:
 Parameters:
 - choreId (required): ID of the chore to delete (from get_chores)
 
-Note: This permanently removes the chore. For recurring chores, this may only delete one instance.`,
+Note: This permanently removes the chore. For recurring chores, use the applyTo parameter to scope deletion: 'this' (default) deletes only the given instance; 'this_and_following' deletes this and future occurrences; 'all' deletes the whole series.`,
     {
       choreId: z.string().describe("ID of the chore to delete"),
       applyTo: z
