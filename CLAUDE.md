@@ -79,7 +79,7 @@ Some features require a Skylight Plus subscription. The server detects subscript
 
 ## Technical Details
 
-- **Runtime**: Node.js 18+
+- **Runtime**: Node.js 20+
 - **Module System**: ESM (`"type": "module"`)
 - **TypeScript**: ES2022 target, NodeNext module resolution, strict mode
 - **API Format**: JSON:API patterns (type, id, attributes, relationships)

@@ -91,7 +91,7 @@ Copy this into your AI's custom instructions or system prompt:
 
 ## Prerequisites
 
-- Node.js 18+
+- Node.js 20+
 - A Skylight account with an active subscription
 - Your Skylight Frame ID (see [Finding your Frame ID](#finding-your-frame-id))
 
