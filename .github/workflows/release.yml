@@ -115,9 +115,6 @@ jobs:
           echo "MCPB_FILE=${OUTPUT}" >> "$GITHUB_OUTPUT"
           ls -lh "${OUTPUT}"
 
-      - name: Upgrade npm for Trusted Publishing
-        run: npm install -g npm@latest
-
       - name: Publish to npm
         run: npm publish --access public --provenance
 
