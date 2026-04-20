@@ -116,7 +116,14 @@ jobs:
           ls -lh "${OUTPUT}"
 
       - name: Publish to npm
-        run: npm publish --access public --provenance
+        # TODO: revert to `npm publish --access public --provenance` once
+        # Trusted Publishing on npm is confirmed working for this package.
+        # The v2.0.0 bootstrap used NPM_TOKEN because the package didn't
+        # exist; Trusted Publishing was later configured but still returning
+        # 404 on OIDC publish attempts as of v2.0.1 — cause TBD.
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
