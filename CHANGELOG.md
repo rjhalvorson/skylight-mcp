@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-04-19
+
+Docs + metadata only. No runtime code changes.
+
+### Added
+
+- **`privacy_policies` field in manifest.json** pointing to Skylight's own privacy policy, since Skylight is the third party that processes your family data when this MCP server queries their API.
+- **Security & Privacy section in README** explaining what this server actually accesses (narrow: env vars, own `package.json`, HTTPS to `app.ourskylight.com`), what it does not do (no arbitrary filesystem access, no shell execution, no other processes, no third-party telemetry), where credentials live (OS keychain via Claude Desktop; env vars otherwise), and how users can verify the bundle they installed (npm OIDC provenance + auditable source).
+
+### Notes
+
+- Does not remove the Claude Desktop "this extension can view everything on your computer" warning, which is architectural — the MCPB format has no capability-sandbox model and all locally-installed MCP servers trigger it. The new docs help users evaluate the trust decision with concrete information.
+- First release using Trusted Publishing + OIDC-signed provenance end-to-end (v2.0.0 used a one-time NPM_TOKEN bootstrap because the package did not exist yet).
+
 ## [2.0.0] - 2026-04-19
 
 First release under maintained continuation at [rjhalvorson/skylight-mcp](https://github.com/rjhalvorson/skylight-mcp). The original project at [TheEagleByte/skylight-mcp](https://github.com/TheEagleByte/skylight-mcp) appears unmaintained; this repo carries it forward.

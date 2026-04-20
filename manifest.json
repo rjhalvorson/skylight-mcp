@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "skylight-mcp",
   "display_name": "Skylight Calendar",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Query and manage your Skylight family calendar, chores, lists, and rewards",
   "long_description": "Connect Claude to your Skylight Calendar account for natural-language access to family calendars, chores, grocery and to-do lists, tasks, family members, and rewards. Built on top of the reverse-engineered Skylight API. This is a maintained continuation of TheEagleByte/skylight-mcp.",
   "author": {
