@@ -18,6 +18,7 @@
   "documentation": "https://github.com/rjhalvorson/skylight-mcp#readme",
   "support": "https://github.com/rjhalvorson/skylight-mcp/issues",
   "license": "MIT",
+  "privacy_policies": ["https://www.skylightframe.com/privacy/"],
   "keywords": ["mcp", "skylight", "calendar", "family", "chores", "lists"],
   "server": {
     "type": "node",

@@ -263,6 +263,36 @@ npm run dev  # Start with hot reload
 - Enhancing documentation
 - Writing additional tests
 
+## Security & Privacy
+
+When you install the `.mcpb` in Claude Desktop, you'll see a warning that the extension "can view everything on your computer." This is a blanket warning Claude Desktop shows for **every locally-installed MCP server**, regardless of what the server actually does. MCP servers run as ordinary Node.js processes with the same access as any program you launch.
+
+**What this server actually accesses:**
+
+- Reads the environment variables you configure (`SKYLIGHT_EMAIL`, `SKYLIGHT_PASSWORD`, `SKYLIGHT_FRAME_ID`, `SKYLIGHT_TIMEZONE`, or `SKYLIGHT_TOKEN`).
+- Reads its own `package.json` at startup to report the server version to Claude.
+- Makes outbound HTTPS requests to `app.ourskylight.com` to call the Skylight API on your behalf.
+
+**What this server does not do:**
+
+- Does not read, write, or scan files outside its own install directory.
+- Does not execute shell commands or spawn subprocesses.
+- Does not inspect other applications, processes, or network traffic.
+- Does not phone home to any server other than `app.ourskylight.com`.
+
+**Where your credentials go:**
+
+- When installed via `.mcpb`, Claude Desktop stores your Skylight email/password/frame ID in its secure secret store (macOS Keychain on Mac, credential vault on Windows) — not in a plaintext config file.
+- When installed manually via npm or source, credentials come from environment variables or a local `.env` file you control.
+- Credentials are only transmitted over HTTPS to Skylight's own authentication endpoints.
+- No telemetry, analytics, or third-party services.
+
+**Verifying the bundle you installed:**
+
+- All releases are published to npm with [OIDC-signed provenance](https://docs.npmjs.com/generating-provenance-statements), cryptographically linking each package to the GitHub Actions workflow run that built it.
+- Source code is fully open at [github.com/rjhalvorson/skylight-mcp](https://github.com/rjhalvorson/skylight-mcp); the server is under 3k lines of TypeScript and auditable.
+- Skylight's own privacy policy (how they handle the data you retrieve via this server) is at [skylightframe.com/privacy](https://www.skylightframe.com/privacy/).
+
 ## Issues & Support
 
 - **Bug reports**: [Open an issue](https://github.com/rjhalvorson/skylight-mcp/issues/new) with steps to reproduce
