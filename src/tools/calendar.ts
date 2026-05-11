@@ -44,6 +44,7 @@ Returns a list of events with their titles, times, and details.`,
           dateMin: startDate,
           dateMax: endDate,
           timezone: config.timezone,
+          include: "categories,calendar_account",
         });
 
         if (events.length === 0) {
@@ -71,6 +72,20 @@ Returns a list of events with their titles, times, and details.`,
             for (const [key, value] of Object.entries(attrs)) {
               if (value !== null && value !== undefined) {
                 parts.push(`  ${key}: ${value}`);
+              }
+            }
+
+            // Surface relationships (calendar_account, categories) — these are needed
+            // to construct create/update requests that route events to synced calendars
+            const rels = (event as unknown as { relationships?: Record<string, { data: unknown }> }).relationships;
+            if (rels) {
+              const acct = rels.calendar_account?.data as { id?: string } | null | undefined;
+              if (acct?.id) {
+                parts.push(`  calendar_account_id: ${acct.id}`);
+              }
+              const cats = rels.categories?.data as Array<{ id: string }> | undefined;
+              if (cats && cats.length > 0) {
+                parts.push(`  category_ids: [${cats.map((c) => c.id).join(", ")}]`);
               }
             }
 
@@ -186,10 +201,12 @@ Parameters:
 - description: Additional notes for the event
 - location: Where the event takes place
 - categoryIds: Family member IDs to associate with the event
+- calendarAccountId: Synced calendar account ID (from get_source_calendars). REQUIRED if you want the event to sync back to iCloud/Google. Without it, the event lives only on Skylight.
+- calendarId: Specific sub-calendar within the synced account (optional)
 
 Returns: The created event details.
 
-Related: Use get_family_members to get category IDs for assignments.`,
+Related: Use get_family_members to get category IDs for assignments, and get_source_calendars to get calendarAccountId values.`,
     {
       summary: z.string().describe("Event title (e.g., 'Dentist Appointment')"),
       startsAt: z.string().describe("Start time (ISO format like '2025-01-15T14:00:00')"),
@@ -198,8 +215,10 @@ Related: Use get_family_members to get category IDs for assignments.`,
       description: z.string().optional().describe("Additional notes for the event"),
       location: z.string().optional().describe("Event location"),
       categoryIds: z.array(z.string()).optional().describe("Family member IDs to assign"),
+      calendarAccountId: z.string().optional().describe("Synced calendar account ID (from get_source_calendars). Required for two-way sync back to iCloud/Google/Outlook."),
+      calendarId: z.string().optional().describe("Specific synced sub-calendar ID within the account (e.g. an iCloud sub-calendar). Optional; pairs with calendarAccountId."),
     },
-    async ({ summary, startsAt, endsAt, allDay, description, location, categoryIds }) => {
+    async ({ summary, startsAt, endsAt, allDay, description, location, categoryIds, calendarAccountId, calendarId }) => {
       try {
         const config = getConfig();
         const event = await createCalendarEvent({
@@ -210,6 +229,8 @@ Related: Use get_family_members to get category IDs for assignments.`,
           description,
           location,
           category_ids: categoryIds,
+          calendar_account_id: calendarAccountId,
+          calendar_id: calendarId,
           timezone: config.timezone,
           kind: "standard",
         });
