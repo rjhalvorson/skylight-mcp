@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
-import { getFamilyMembers, getCategories } from "../api/endpoints/categories.js";
+import { getCategories } from "../api/endpoints/categories.js";
 import { getFrame } from "../api/endpoints/frames.js";
 import { getDevices } from "../api/endpoints/devices.js";
 import { formatErrorForMcp } from "../utils/errors.js";
@@ -9,61 +9,36 @@ export function registerFamilyTools(server: McpServer): void {
   // get_family_members tool
   server.tool(
     "get_family_members",
-    `Get family members/profiles from Skylight.
+    `Get all Skylight categories — family member profiles AND non-profile categories (like calendar groupings: "School", "Sports", etc.).
 
-Shows who can be assigned chores and their profile details.
+Shows who/what can be assigned to events and chores.
 
 Use this to answer:
 - "Who's in our family on Skylight?"
-- "What family members are set up?"
+- "What categories exist for tagging events?"
 - "Who can I assign chores to?"`,
     {},
     async () => {
       try {
-        const members = await getFamilyMembers();
+        const categories = await getCategories();
 
-        if (members.length === 0) {
-          // Fall back to all categories
-          const categories = await getCategories();
-          if (categories.length === 0) {
-            return {
-              content: [
-                {
-                  type: "text" as const,
-                  text: "No family members or categories found in Skylight.",
-                },
-              ],
-            };
-          }
-
-          const categoryList = categories
-            .map((cat) => {
-              const parts = [`- ${cat.attributes.label ?? "Unnamed"}`];
-              if (cat.attributes.color) {
-                parts.push(`  Color: ${cat.attributes.color}`);
-              }
-              if (cat.attributes.selected_for_chore_chart) {
-                parts.push(`  On chore chart: Yes`);
-              }
-              return parts.join("\n");
-            })
-            .join("\n\n");
-
+        if (categories.length === 0) {
           return {
             content: [
               {
                 type: "text" as const,
-                text: `Categories (no linked profiles found):\n\n${categoryList}`,
+                text: "No categories found in Skylight.",
               },
             ],
           };
         }
 
-        const memberList = members
-          .map((member) => {
-            const attrs = member.attributes;
+        const categoryList = categories
+          .map((cat) => {
+            const attrs = cat.attributes;
             const parts = [`- ${attrs.label ?? "Unnamed"}`];
-
+            parts.push(`  ID: ${cat.id}`);
+            parts.push(`  Linked to profile: ${attrs.linked_to_profile ? "Yes" : "No"}`);
             if (attrs.color) {
               parts.push(`  Color: ${attrs.color}`);
             }
@@ -73,7 +48,6 @@ Use this to answer:
             if (attrs.selected_for_chore_chart) {
               parts.push(`  On chore chart: Yes`);
             }
-
             return parts.join("\n");
           })
           .join("\n\n");
@@ -82,7 +56,7 @@ Use this to answer:
           content: [
             {
               type: "text" as const,
-              text: `Family members:\n\n${memberList}`,
+              text: `Categories (profiles + non-profile categories):\n\n${categoryList}`,
             },
           ],
         };
