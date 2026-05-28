@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Source calendar sync parameters on calendar event tools.** `create_calendar_event` and `update_calendar_event` now accept `calendarId`, `calendarAccountId`, `timezone`, `rrule`, `countdownEnabled`, and `kind` parameters. Events created with `calendarId` + `calendarAccountId` sync back to the underlying source calendar provider (Google, iCloud, etc.) instead of being Skylight-only. Required for events to appear in a connected Google Calendar after creation. (Ported from [upstream PR #23](https://github.com/TheEagleByte/skylight-mcp/pull/23) by [@avinashjoshi](https://github.com/avinashjoshi); upstream is unmaintained. Addresses [#1](https://github.com/rjhalvorson/skylight-mcp/issues/1); partially addresses [#3](https://github.com/rjhalvorson/skylight-mcp/issues/3).)
+
 ## [2.0.1] - 2026-04-19
 
 Docs + metadata only. No runtime code changes.
