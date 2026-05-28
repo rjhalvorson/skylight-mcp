@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Calendar datetime timezone handling.** `create_calendar_event` and `update_calendar_event` no longer treat naked ISO datetimes (e.g. `"2026-05-28T19:45:00"`) as UTC. When the input has no timezone designator, the configured frame timezone's offset is appended before sending to the Skylight API. Existing callers passing ISO strings with `Z` or explicit `±HH:MM` offsets are unaffected.
+
+### Changed
+
+- **Calendar create/update return verbose confirmations.** `create_calendar_event` and `update_calendar_event` now echo the resolved fields (title, start, end, all-day, location) instead of just the event ID, mirroring `chores.js`. Lets callers verify what the server actually stored without a follow-up `get_calendar_events` call.
+
 ## [2.0.1] - 2026-04-19
 
 Docs + metadata only. No runtime code changes.

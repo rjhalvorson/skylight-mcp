@@ -8,9 +8,32 @@ import {
   updateCalendarEvent,
   deleteCalendarEvent,
 } from "../api/endpoints/calendar.js";
-import { getTodayDate, parseDate, formatDateForDisplay } from "../utils/dates.js";
+import { getTodayDate, parseDate, formatDateForDisplay, normalizeDateTime } from "../utils/dates.js";
 import { formatErrorForMcp } from "../utils/errors.js";
 import { getConfig } from "../config.js";
+
+/**
+ * Render a multi-line confirmation message for a created or updated event.
+ * Echoes the resolved fields (including normalized datetimes) so callers can
+ * verify what the server actually stored without a follow-up read.
+ */
+function formatEventConfirmation(
+  verb: "Created" | "Updated",
+  event: { id: string; attributes?: Record<string, unknown> }
+): string {
+  const attrs = (event.attributes ?? {}) as Record<string, unknown>;
+  const lines = [`${verb} calendar event (ID: ${event.id})`];
+  const summary = attrs.summary as string | undefined;
+  if (summary) lines.push(`  Title: ${summary}`);
+  const startsAt = attrs.starts_at as string | undefined;
+  if (startsAt) lines.push(`  Starts: ${startsAt}`);
+  const endsAt = attrs.ends_at as string | undefined;
+  if (endsAt) lines.push(`  Ends: ${endsAt}`);
+  if (attrs.all_day === true) lines.push(`  All-day: yes`);
+  const location = attrs.location as string | undefined;
+  if (location) lines.push(`  Location: ${location}`);
+  return lines.join("\n");
+}
 
 export function registerCalendarTools(server: McpServer): void {
   // get_calendar_events tool
@@ -189,11 +212,24 @@ Parameters:
 
 Returns: The created event details.
 
+Notes:
+- Datetime values without a timezone designator (e.g. "2026-05-28T19:45:00")
+  are interpreted in the frame's configured timezone. Pass an explicit offset
+  (e.g. "...T19:45:00-07:00") to override.
+
 Related: Use get_family_members to get category IDs for assignments.`,
     {
       summary: z.string().describe("Event title (e.g., 'Dentist Appointment')"),
-      startsAt: z.string().describe("Start time (ISO format like '2025-01-15T14:00:00')"),
-      endsAt: z.string().describe("End time (ISO format like '2025-01-15T15:00:00')"),
+      startsAt: z
+        .string()
+        .describe(
+          "Start time (ISO format like '2025-01-15T14:00:00'; without an offset, interpreted in the frame timezone)"
+        ),
+      endsAt: z
+        .string()
+        .describe(
+          "End time (ISO format like '2025-01-15T15:00:00'; without an offset, interpreted in the frame timezone)"
+        ),
       allDay: z.boolean().optional().default(false).describe("True for all-day events"),
       description: z.string().optional().describe("Additional notes for the event"),
       location: z.string().optional().describe("Event location"),
@@ -204,8 +240,8 @@ Related: Use get_family_members to get category IDs for assignments.`,
         const config = getConfig();
         const event = await createCalendarEvent({
           summary,
-          starts_at: startsAt,
-          ends_at: endsAt,
+          starts_at: normalizeDateTime(startsAt, config.timezone),
+          ends_at: normalizeDateTime(endsAt, config.timezone),
           all_day: allDay,
           description,
           location,
@@ -218,7 +254,7 @@ Related: Use get_family_members to get category IDs for assignments.`,
           content: [
             {
               type: "text" as const,
-              text: `Created calendar event "${summary}" (ID: ${event.id})`,
+              text: formatEventConfirmation("Created", event),
             },
           ],
         };
@@ -250,12 +286,22 @@ Parameters:
 - location: Updated location
 - categoryIds: Updated family member assignments
 
-Returns: The updated event details.`,
+Returns: The updated event details.
+
+Notes:
+- Datetime values without a timezone designator are interpreted in the frame's
+  configured timezone. Pass an explicit offset to override.`,
     {
       eventId: z.string().describe("ID of the event to update"),
       summary: z.string().optional().describe("New event title"),
-      startsAt: z.string().optional().describe("New start time (ISO format)"),
-      endsAt: z.string().optional().describe("New end time (ISO format)"),
+      startsAt: z
+        .string()
+        .optional()
+        .describe("New start time (ISO format; without an offset, interpreted in the frame timezone)"),
+      endsAt: z
+        .string()
+        .optional()
+        .describe("New end time (ISO format; without an offset, interpreted in the frame timezone)"),
       allDay: z.boolean().optional().describe("Change to all-day event"),
       description: z.string().optional().describe("Updated notes"),
       location: z.string().optional().describe("Updated location"),
@@ -263,10 +309,11 @@ Returns: The updated event details.`,
     },
     async ({ eventId, summary, startsAt, endsAt, allDay, description, location, categoryIds }) => {
       try {
+        const config = getConfig();
         const updates: Record<string, unknown> = {};
         if (summary !== undefined) updates.summary = summary;
-        if (startsAt !== undefined) updates.starts_at = startsAt;
-        if (endsAt !== undefined) updates.ends_at = endsAt;
+        if (startsAt !== undefined) updates.starts_at = normalizeDateTime(startsAt, config.timezone);
+        if (endsAt !== undefined) updates.ends_at = normalizeDateTime(endsAt, config.timezone);
         if (allDay !== undefined) updates.all_day = allDay;
         if (description !== undefined) updates.description = description;
         if (location !== undefined) updates.location = location;
@@ -278,7 +325,7 @@ Returns: The updated event details.`,
           content: [
             {
               type: "text" as const,
-              text: `Updated calendar event (ID: ${event.id})`,
+              text: formatEventConfirmation("Updated", event),
             },
           ],
         };

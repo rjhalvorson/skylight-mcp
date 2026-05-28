@@ -119,3 +119,56 @@ export function formatDateForDisplay(dateStr: string): string {
     day: "numeric",
   });
 }
+
+/**
+ * Get the UTC offset (e.g. "-07:00", "+05:30") that applies to a given local
+ * date in a given IANA timezone. Accounts for DST.
+ */
+function getOffsetForDateInTimezone(localDateTime: string, timezone: string): string | null {
+  // Treat the naive local datetime as a UTC instant for the purpose of asking
+  // Intl what offset the target zone uses near that wall-clock moment. This is
+  // accurate for all dates except those within DST transition gaps/overlaps,
+  // which we accept as a documented edge case.
+  const refInstant = new Date(localDateTime.endsWith("Z") ? localDateTime : `${localDateTime}Z`);
+  if (isNaN(refInstant.getTime())) {
+    return null;
+  }
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: timezone,
+    timeZoneName: "longOffset",
+    year: "numeric",
+  }).formatToParts(refInstant);
+  const tzName = parts.find((p) => p.type === "timeZoneName")?.value;
+  if (!tzName) return null;
+  // longOffset returns "GMT-07:00", "GMT+05:30", or bare "GMT" for UTC
+  if (tzName === "GMT") return "+00:00";
+  const match = tzName.match(/^GMT([+-]\d{2}:\d{2})$/);
+  return match ? match[1] : null;
+}
+
+/**
+ * Normalize a datetime string for the Skylight API.
+ *
+ * If `input` already has a timezone designator (trailing Z or ±HH:MM), it's
+ * returned unchanged. If it's a naive ISO datetime (e.g. "2026-05-28T19:45:00"),
+ * the offset for the configured frame timezone on that date is appended so the
+ * API doesn't interpret the wall-clock time as UTC.
+ *
+ * Returns the input unchanged if it doesn't look like an ISO datetime or if the
+ * timezone can't be resolved — letting the API surface its own validation error
+ * rather than us mangling the value.
+ */
+export function normalizeDateTime(input: string, timezone?: string): string {
+  if (!input) return input;
+  // Already has a timezone designator
+  if (/Z$|[+-]\d{2}:\d{2}$/.test(input)) {
+    return input;
+  }
+  // Only normalize things that look like an ISO datetime "YYYY-MM-DDTHH:MM(:SS)?"
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/.test(input)) {
+    return input;
+  }
+  if (!timezone) return input;
+  const offset = getOffsetForDateInTimezone(input, timezone);
+  return offset ? `${input}${offset}` : input;
+}
